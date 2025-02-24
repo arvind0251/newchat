@@ -4,7 +4,7 @@ from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, Callb
 import requests
 import os
 
-TOKEN = "YOUR_TELEGRAM_BOT_TOKEN"
+TOKEN = "8092574352:AAHlKwKMGuaEhQhwY47_x6M_sbko8okTgy8"
 OWNER_ID_1 = "7408008545"
 OWNER_ID_2 = "7256617868"
 SUPPORT_CHANNEL = "https://t.me/RU_DRA_098"
