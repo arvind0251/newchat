@@ -1,138 +1,69 @@
-from telegram import Update, ChatPermissions
+from telegram import Update
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
 from textblob import TextBlob
-from tinydb import TinyDB, Query
 import random
-import time
 
-TOKEN = "8092574352:AAHlKwKMGuaEhQhwY47_x6M_sbko8okTgy8"
+TOKEN = "YOUR_BOT_TOKEN"
 
-# Database setup for user stats & custom replies
-db = TinyDB('data.json')
-stats_table = db.table('stats')
-replies_table = db.table('custom_replies')
-
-# List of bad words to delete
-BAD_WORDS = ["badword1", "badword2", "examplebadword"]
-
-# Rock-Paper-Scissors choices
-RPS_CHOICES = ["Rock", "Paper", "Scissors"]
-
-# User Stats - Track messages
-def track_user(update: Update, context: CallbackContext):
-    user_id = update.message.from_user.id
-    user_data = stats_table.get(Query().user_id == user_id)
-
-    if user_data:
-        stats_table.update({"messages": user_data["messages"] + 1}, Query().user_id == user_id)
-    else:
-        stats_table.insert({"user_id": user_id, "messages": 1})
-
-# Admin Command - Ban User
-def ban(update: Update, context: CallbackContext):
-    if update.message.reply_to_message:
-        context.bot.ban_chat_member(update.message.chat_id, update.message.reply_to_message.from_user.id)
-        update.message.reply_text("🚨 User banned!")
-
-# Admin Command - Mute User
-def mute(update: Update, context: CallbackContext):
-    if update.message.reply_to_message:
-        context.bot.restrict_chat_member(update.message.chat_id, update.message.reply_to_message.from_user.id, ChatPermissions(can_send_messages=False))
-        update.message.reply_text("🔇 User muted!")
-
-# Admin Command - Kick User
-def kick(update: Update, context: CallbackContext):
-    if update.message.reply_to_message:
-        context.bot.kick_chat_member(update.message.chat_id, update.message.reply_to_message.from_user.id)
-        update.message.reply_text("👢 User kicked!")
-
-# Custom Replies
-def custom_reply(update: Update):
-    user_text = update.message.text.lower()
-    custom_response = replies_table.get(Query().trigger == user_text)
-    if custom_response:
-        update.message.reply_text(custom_response['response'])
-
-# Add Custom Reply Command
-def add_reply(update: Update, context: CallbackContext):
-    if len(context.args) >= 2:
-        trigger = context.args[0].lower()
-        response = " ".join(context.args[1:])
-        replies_table.upsert({"trigger": trigger, "response": response}, Query().trigger == trigger)
-        update.message.reply_text(f"✅ Custom reply added for '{trigger}'!")
-    else:
-        update.message.reply_text("Usage: /addreply <trigger> <response>")
-
-# AI-Powered Response with Stylish Text
+# Stylish text conversion
 def stylish_text(text):
     styles = ["𝓢𝓽𝔂𝓵𝓲𝓼𝓱", "Ⓢⓣⓨⓛⓘⓢⓗ", "🅂🅃🅈🄻🄸🅂🄷", "🆂🆃🆈🅻🅸🆂🅷"]
     return f"{random.choice(styles)} ➤ {text}"
 
-def chat_ai(update: Update):
+# Welcome new members in groups
+def welcome(update: Update, context: CallbackContext):
+    for member in update.message.new_chat_members:
+        update.message.reply_text(f"👋 Welcome, {member.first_name}! Enjoy the chat 😊")
+
+# Command: /start
+def start(update: Update, context: CallbackContext):
+    chat_type = update.message.chat.type
+    if chat_type == "private":
+        update.message.reply_text("Hello! 🤖 I am your personal chatbot. Type anything, and I'll reply!")
+    else:
+        update.message.reply_text("Hey everyone! I'm active in this group. Mention me or talk normally!")
+
+# Command: /help
+def help_command(update: Update, context: CallbackContext):
+    update.message.reply_text("🤖 I can:\n- Talk in **groups & private chats**\n- **Stylish text replies**\n- **AI-powered chat**\n- **Spam filtering**\n- **Auto-welcome new users**")
+
+# AI-powered response for private & group chat
+def chat_ai(update: Update, context: CallbackContext):
     user_text = update.message.text
+    chat_type = update.message.chat.type
+
+    # Spam protection (block repeated words)
     words = user_text.split()
-    
-    # Anti-Spam Filter (Detect Repeated Words)
     if len(words) != len(set(words)):
         update.message.reply_text("🚫 Stop spamming!")
         return
-    
-    # Check for bad words & delete message
-    if any(bad_word in user_text.lower() for bad_word in BAD_WORDS):
-        update.message.delete()
-        update.message.reply_text("⚠️ Watch your language!")
-        return
-    
-    # AI-Powered Response
+
+    # AI response based on message sentiment
     blob = TextBlob(user_text)
-    response = stylish_text("That sounds great! 😊") if blob.sentiment.polarity > 0 else stylish_text("Hmm, tell me more... 🤔")
-    update.message.reply_text(response)
+    if blob.sentiment.polarity > 0:
+        response = stylish_text("That sounds great! 😊")
+    else:
+        response = stylish_text("Hmm, tell me more... 🤔")
 
-# Games - Rock Paper Scissors
-def play_rps(update: Update, context: CallbackContext):
-    bot_choice = random.choice(RPS_CHOICES)
-    user_choice = context.args[0].capitalize() if context.args else ""
-    
-    if user_choice not in RPS_CHOICES:
-        update.message.reply_text("🎮 Choose Rock, Paper, or Scissors! Example: `/rps Rock`")
-        return
-    
-    result = "🤝 It's a tie!" if user_choice == bot_choice else "✅ You win!" if (user_choice, bot_choice) in [("Rock", "Scissors"), ("Paper", "Rock"), ("Scissors", "Paper")] else "❌ You lose!"
-    
-    update.message.reply_text(f"🎮 You: {user_choice}\n🤖 Bot: {bot_choice}\n{result}")
+    # Send reply based on chat type
+    if chat_type == "private":
+        update.message.reply_text(f"💬 {response}")  # Private chat
+    else:
+        update.message.reply_text(f"👥 {update.message.from_user.first_name}: {response}")  # Group chat
 
-# Trivia Game
-def trivia(update: Update):
-    questions = {
-        "What is the capital of France?": "Paris",
-        "Who wrote 'Romeo and Juliet'?": "Shakespeare",
-        "What is 5 + 7?": "12",
-    }
-    question, answer = random.choice(list(questions.items()))
-    update.message.reply_text(f"🧠 Trivia Time: {question}")
-    time.sleep(5)
-    update.message.reply_text(f"✅ Answer: {answer}")
-
-# Command Handlers
+# Main function
 def main():
     updater = Updater(TOKEN, use_context=True)
     dp = updater.dispatcher
 
-    # Admin Commands
-    dp.add_handler(CommandHandler("ban", ban))
-    dp.add_handler(CommandHandler("mute", mute))
-    dp.add_handler(CommandHandler("kick", kick))
+    # Commands
+    dp.add_handler(CommandHandler("start", start))
+    dp.add_handler(CommandHandler("help", help_command))
 
-    # Custom Reply Commands
-    dp.add_handler(CommandHandler("addreply", add_reply))
+    # Welcome new members
+    dp.add_handler(MessageHandler(Filters.status_update.new_chat_members, welcome))
 
-    # Games
-    dp.add_handler(CommandHandler("rps", play_rps))
-    dp.add_handler(CommandHandler("trivia", trivia))
-
-    # Message Handlers
-    dp.add_handler(MessageHandler(Filters.text & ~Filters.command, track_user))
-    dp.add_handler(MessageHandler(Filters.text & ~Filters.command, custom_reply))
+    # Message handler for chat AI
     dp.add_handler(MessageHandler(Filters.text & ~Filters.command, chat_ai))
 
     updater.start_polling()
