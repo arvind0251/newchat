@@ -1,12 +1,12 @@
 import logging
-import openai
+import http.client
 import os
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import (ApplicationBuilder, CommandHandler, MessageHandler, filters, CallbackContext)
 
-# 🔑 Bot Token & OpenAI API Key (Fetch from Environment Variables for Security)
+# 🔑 Bot Token & RapidAPI Key (Fetch from Environment Variables for Security)
 TOKEN = os.getenv("BOT_TOKEN")
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+RAPIDAPI_KEY = os.getenv("RAPIDAPI_KEY")
 OWNER_USERNAME = "RU_DRA_65"
 GROUP_LINK = "https://t.me/RU_DRA_098"
 
@@ -14,15 +14,19 @@ GROUP_LINK = "https://t.me/RU_DRA_098"
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# 🤖 Generate AI Response using GPT-4 API
+# 🤖 Generate AI Response using RapidAPI GPT-4o
 def generate_response(user_input):
-    openai.api_key = OPENAI_API_KEY
-    response = openai.ChatCompletion.create(
-        model="gpt-4",
-        messages=[{"role": "user", "content": user_input}],
-        max_tokens=150
-    )
-    return response["choices"][0]["message"]["content"].strip()
+    conn = http.client.HTTPSConnection("cheapest-gpt-4-turbo-gpt-4-vision-chatgpt-openai-ai-api.p.rapidapi.com")
+    payload = f'{{"messages":[{{"role":"user","content":"{user_input}"}}],"model":"gpt-4o","max_tokens":100,"temperature":0.9}}'
+    headers = {
+        'x-rapidapi-key': RAPIDAPI_KEY,
+        'x-rapidapi-host': "cheapest-gpt-4-turbo-gpt-4-vision-chatgpt-openai-ai-api.p.rapidapi.com",
+        'Content-Type': "application/json"
+    }
+    conn.request("POST", "/v1/chat/completions", payload, headers)
+    res = conn.getresponse()
+    data = res.read()
+    return data.decode("utf-8")
 
 # 🏠 Start Command
 async def start(update: Update, context: CallbackContext) -> None:
@@ -33,7 +37,7 @@ async def start(update: Update, context: CallbackContext) -> None:
     reply_markup = InlineKeyboardMarkup(keyboard)
     
     # 🖼️ Send Image from URL
-    image_url = "https://files.catbox.moe/c1fckh.jpg"  # 🛠️ Replace with your image URL
+    image_url = "https://your-image-url.com/start.jpg"  # 🛠️ Replace with your image URL
     await update.message.reply_photo(photo=image_url, caption="Hello! I'm YOUR BABY. Talk to me!", reply_markup=reply_markup)
 
 # 🤖 Handle Messages
