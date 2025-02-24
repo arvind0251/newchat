@@ -3,7 +3,7 @@ from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, Callb
 from textblob import TextBlob
 import random
 
-TOKEN = "YOUR_BOT_TOKEN"
+TOKEN = "8092574352:AAHlKwKMGuaEhQhwY47_x6M_sbko8okTgy8"
 
 # Stylish text conversion
 def stylish_text(text):
