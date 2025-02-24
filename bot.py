@@ -39,8 +39,8 @@ custom_replies = {"hello": "Hi there!", "bye": "Goodbye!"}
 async def start(update: Update, context: CallbackContext) -> None:
     keyboard = [
         [InlineKeyboardButton("Enable/Disable Features", callback_data='toggle_features')],
-        [InlineKeyboardButton("Owner 1", url=f"tg://user?id={OWNER_ID_1}"),
-         InlineKeyboardButton("Owner 2", url=f"tg://user?id={OWNER_ID_2}")],
+        [InlineKeyboardButton("Owner 1", url="https://t.me/RU_DRA_65")],
+        [InlineKeyboardButton("Owner 2", url="https://t.me/KAARTIK_NISHAD")],ID_2}")],
         [InlineKeyboardButton("Support Channel", url=SUPPORT_CHANNEL)]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
