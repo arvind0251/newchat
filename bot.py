@@ -33,7 +33,7 @@ async def start(update: Update, context: CallbackContext) -> None:
     reply_markup = InlineKeyboardMarkup(keyboard)
     
     # 🖼️ Send Image from URL
-    image_url = "https://your-image-url.com/start.jpg"  # 🛠️ Replace with your image URL
+    image_url = "https://files.catbox.moe/c1fckh.jpg"  # 🛠️ Replace with your image URL
     await update.message.reply_photo(photo=image_url, caption="Hello! I'm YOUR BABY. Talk to me!", reply_markup=reply_markup)
 
 # 🤖 Handle Messages
