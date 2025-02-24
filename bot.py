@@ -1,6 +1,7 @@
 import logging
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext, CallbackQueryHandler
+from telegram.ext import (ApplicationBuilder, CommandHandler, MessageHandler,
+                          filters, CallbackContext, CallbackQueryHandler)
 
 # 🔑 Bot ke Token aur IDs (Replace karein)
 TOKEN = "8092574352:AAHlKwKMGuaEhQhwY47_x6M_sbko8okTgy8"
@@ -35,7 +36,7 @@ bad_words = ["badword1", "badword2"]
 custom_replies = {"hello": "Hi there!", "bye": "Goodbye!"}
 
 # 🏠 Start Command
-def start(update: Update, context: CallbackContext) -> None:
+async def start(update: Update, context: CallbackContext) -> None:
     keyboard = [
         [InlineKeyboardButton("Enable/Disable Features", callback_data='toggle_features')],
         [InlineKeyboardButton("Owner 1", url=f"tg://user?id={OWNER_ID_1}"),
@@ -43,77 +44,75 @@ def start(update: Update, context: CallbackContext) -> None:
         [InlineKeyboardButton("Support Channel", url=SUPPORT_CHANNEL)]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
-    update.message.reply_text("Welcome! Choose an option:", reply_markup=reply_markup)
+    await update.message.reply_text("Welcome! Choose an option:", reply_markup=reply_markup)
 
 # 🔄 Features Enable/Disable karne ka command
-def toggle_features(update: Update, context: CallbackContext) -> None:
+async def toggle_features(update: Update, context: CallbackContext) -> None:
     query = update.callback_query
     keyboard = [[InlineKeyboardButton(f"{key} - {'ON' if val else 'OFF'}", callback_data=key)] for key, val in enabled_features.items()]
-    query.message.reply_text("Click to toggle features:", reply_markup=InlineKeyboardMarkup(keyboard))
+    await query.message.reply_text("Click to toggle features:", reply_markup=InlineKeyboardMarkup(keyboard))
 
-def feature_toggle(update: Update, context: CallbackContext) -> None:
+async def feature_toggle(update: Update, context: CallbackContext) -> None:
     query = update.callback_query
     feature = query.data
     enabled_features[feature] = not enabled_features[feature]
-    query.answer(f"{feature} is now {'enabled' if enabled_features[feature] else 'disabled'}!")
-    toggle_features(update, context)
+    await query.answer(f"{feature} is now {'enabled' if enabled_features[feature] else 'disabled'}!")
+    await toggle_features(update, context)
 
 # 🎉 Auto-Welcome Message
-def welcome(update: Update, context: CallbackContext) -> None:
+async def welcome(update: Update, context: CallbackContext) -> None:
     if enabled_features["welcome"]:
         for member in update.message.new_chat_members:
-            update.message.reply_text(f"Welcome {member.full_name}!")
+            await update.message.reply_text(f"Welcome {member.full_name}!")
 
 # 🎥 YouTube Downloader (Dummy Response)
-def youtube_download(update: Update, context: CallbackContext) -> None:
+async def youtube_download(update: Update, context: CallbackContext) -> None:
     if enabled_features["yt_downloader"] and context.args:
         url = context.args[0]
-        update.message.reply_text(f"Downloading YouTube video from: {url}")
+        await update.message.reply_text(f"Downloading YouTube video from: {url}")
 
 # 🖼️ Sticker to Image Converter (Dummy Response)
-def sticker_to_image(update: Update, context: CallbackContext) -> None:
+async def sticker_to_image(update: Update, context: CallbackContext) -> None:
     if enabled_features["sticker_converter"] and update.message.sticker:
-        update.message.reply_text("Sticker converted to image!")
+        await update.message.reply_text("Sticker converted to image!")
 
 # 🤖 AI Chatbot Response
-def ai_chatbot(update: Update, context: CallbackContext) -> None:
+async def ai_chatbot(update: Update, context: CallbackContext) -> None:
     if enabled_features["ai_chatbot"]:
-        update.message.reply_text(f"AI Response: {update.message.text}")
+        await update.message.reply_text(f"AI Response: {update.message.text}")
 
 # 🔁 Auto-Responder
-def auto_responder(update: Update, context: CallbackContext) -> None:
+async def auto_responder(update: Update, context: CallbackContext) -> None:
     if enabled_features["auto_responder"] and update.message.text.lower() in custom_replies:
-        update.message.reply_text(custom_replies[update.message.text.lower()])
+        await update.message.reply_text(custom_replies[update.message.text.lower()])
 
 # 📲 Instagram Reel Downloader (Dummy Response)
-def insta_download(update: Update, context: CallbackContext) -> None:
+async def insta_download(update: Update, context: CallbackContext) -> None:
     if enabled_features["insta_downloader"] and context.args:
         url = context.args[0]
-        update.message.reply_text(f"Downloading Instagram reel from: {url}")
+        await update.message.reply_text(f"Downloading Instagram reel from: {url}")
 
 # 🚀 **Main Function (Bot Initialization)**
 def main() -> None:
-    updater = Updater(TOKEN)
-    dp = updater.dispatcher
+    app = ApplicationBuilder().token(TOKEN).build()
 
     # 🔥 Commands Handlers
-    dp.add_handler(CommandHandler("start", start))
-    dp.add_handler(CommandHandler("yt", youtube_download))
-    dp.add_handler(CommandHandler("insta", insta_download))
+    app.add_handler(CommandHandler("start", start))
+    app.add_handler(CommandHandler("yt", youtube_download))
+    app.add_handler(CommandHandler("insta", insta_download))
     
     # 📌 Callback Handlers
-    dp.add_handler(CallbackQueryHandler(toggle_features, pattern='toggle_features'))
-    dp.add_handler(CallbackQueryHandler(feature_toggle))
+    app.add_handler(CallbackQueryHandler(toggle_features, pattern='toggle_features'))
+    app.add_handler(CallbackQueryHandler(feature_toggle))
     
     # 📨 Message Handlers
-    dp.add_handler(MessageHandler(Filters.status_update.new_chat_members, welcome))
-    dp.add_handler(MessageHandler(Filters.sticker, sticker_to_image))
-    dp.add_handler(MessageHandler(Filters.text & ~Filters.command, ai_chatbot))
-    dp.add_handler(MessageHandler(Filters.text & ~Filters.command, auto_responder))
+    app.add_handler(MessageHandler(filters.StatusUpdate.NEW_CHAT_MEMBERS, welcome))
+    app.add_handler(MessageHandler(filters.Sticker.ALL, sticker_to_image))
+    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, ai_chatbot))
+    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, auto_responder))
 
     # 🔄 Polling System
-    updater.start_polling()
-    updater.idle()
+    app.run_polling()
 
 # 🔥 **Bot Execution**
 if __name__ == '__main__':
