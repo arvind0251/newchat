@@ -5,7 +5,7 @@ from tinydb import TinyDB, Query
 import random
 import time
 
-TOKEN = "YOUR_BOT_TOKEN"
+TOKEN = "8092574352:AAHlKwKMGuaEhQhwY47_x6M_sbko8okTgy8"
 
 # Database setup for user stats & custom replies
 db = TinyDB('data.json')
