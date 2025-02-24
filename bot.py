@@ -1,7 +1,7 @@
 import logging
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, InputFile
 from telegram.ext import (ApplicationBuilder, CommandHandler, MessageHandler, filters, CallbackContext)
 
 # 🔑 Bot Token (Replace this with your actual bot token)
@@ -33,7 +33,10 @@ async def start(update: Update, context: CallbackContext) -> None:
         [InlineKeyboardButton("💬 Join Group", url=GROUP_LINK)]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
-    await update.message.reply_text("Hello! I'm an YOUR BABY . Talk to me!", reply_markup=reply_markup)
+    
+    # 🖼️ Send Image from URL
+    image_url = "https://your-image-url.com/start.jpg"  # 🛠️ Replace with your image URL
+    await update.message.reply_photo(photo=image_url, caption="Hello! I'm YOUR BABY. Talk to me!", reply_markup=reply_markup)
 
 # 🤖 Handle Messages
 async def chat(update: Update, context: CallbackContext) -> None:
