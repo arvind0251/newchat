@@ -7,8 +7,8 @@ from telegram.ext import (ApplicationBuilder, CommandHandler, MessageHandler, fi
 # 🔑 Bot Token & OpenAI API Key (Fetch from Environment Variables for Security)
 TOKEN = os.getenv("BOT_TOKEN")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-OWNER_USERNAME = "@RU_DRA_65"
-GROUP_LINK = "https://t.me/@RU_DRA_098"
+OWNER_USERNAME = "RU_DRA_65"
+GROUP_LINK = "https://t.me/RU_DRA_098"
 
 # 📌 Logging setup
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
