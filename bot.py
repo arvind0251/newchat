@@ -19,9 +19,14 @@ BAD_WORDS = ["badword1", "badword2", "examplebadword"]
 RPS_CHOICES = ["Rock", "Paper", "Scissors"]
 
 # User Stats - Track messages
-def track_user(update: Update):
+def track_user(update: Update, context: CallbackContext):
     user_id = update.message.from_user.id
-    stats_table.upsert({"user_id": user_id, "messages": stats_table.get(Query().user_id == user_id)['messages'] + 1 if stats_table.get(Query().user_id == user_id) else 1}, Query().user_id == user_id)
+    user_data = stats_table.get(Query().user_id == user_id)
+
+    if user_data:
+        stats_table.update({"messages": user_data["messages"] + 1}, Query().user_id == user_id)
+    else:
+        stats_table.insert({"user_id": user_id, "messages": 1})
 
 # Admin Command - Ban User
 def ban(update: Update, context: CallbackContext):
