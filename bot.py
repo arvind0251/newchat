@@ -3,11 +3,11 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import (ApplicationBuilder, CommandHandler, MessageHandler,
                           filters, CallbackContext, CallbackQueryHandler)
 
-# 🔑 Bot ke Token aur IDs (Replace karein)
+# 🔑 Secure Bot Token aur IDs (Replace karein)
 TOKEN = "8092574352:AAHlKwKMGuaEhQhwY47_x6M_sbko8okTgy8"
-OWNER_ID_1 = "7408008545"
-OWNER_ID_2 = "7256617868"
-SUPPORT_CHANNEL = "https://t.me/@RU_DRA_098"
+OWNER_1_USERNAME = "RU_DRA_65"  # Owner 1 ka Telegram username
+OWNER_2_USERNAME = "KAARTIK_NISHAD"  # Owner 2 ka Telegram username
+SUPPORT_CHANNEL = "https://t.me/RU_DRA_098"
 
 # 📌 Logging setup
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
@@ -39,8 +39,8 @@ custom_replies = {"hello": "Hi there!", "bye": "Goodbye!"}
 async def start(update: Update, context: CallbackContext) -> None:
     keyboard = [
         [InlineKeyboardButton("Enable/Disable Features", callback_data='toggle_features')],
-        [InlineKeyboardButton("Owner 1", url="https://t.me/RU_DRA_65")],
-        [InlineKeyboardButton("Owner 2", url="https://t.me/KAARTIK_NISHAD")],ID_2}")],
+        [InlineKeyboardButton("Owner 1", url=f"https://t.me/{OWNER_1_USERNAME}")],
+        [InlineKeyboardButton("Owner 2", url=f"https://t.me/{OWNER_2_USERNAME}")],
         [InlineKeyboardButton("Support Channel", url=SUPPORT_CHANNEL)]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
