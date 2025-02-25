@@ -1,12 +1,17 @@
 import telebot
-import requests
+import openai
 import random
+import requests
 
-# 🔑 Telegram Bot Token (BotFather se lein)
-TOKEN = "8092574352:AAHlKwKMGuaEhQhwY47_x6M_sbko8okTgy8"
-bot = telebot.TeleBot(TOKEN)
+# 🔑 Replace with your API Keys
+TELEGRAM_TOKEN = "8092574352:AAHlKwKMGuaEhQhwY47_x6M_sbko8okTgy8"
+OPENAI_API_KEY = "YOUR_OPENAI_API_KEY"
 
-# 🎭 Random Funny Replies
+# Bot Initialization
+bot = telebot.TeleBot(TELEGRAM_TOKEN)
+openai.api_key = OPENAI_API_KEY
+
+# 🎭 Random Funny Replies (Agar AI Reply na de to backup ke liye)
 funny_replies = [
     "Haan bhai, batao kya scene hai? 😂",
     "Aree o Babu Bhaiya! Kaise ho? 😎",
@@ -15,65 +20,36 @@ funny_replies = [
     "Code likhne de yaar, kyun pareshaan kar raha hai? 🤖"
 ]
 
-# 🎭 Random Roasts
-roasts = [
-    "Teri soch mere code jitni tez hoti to duniya jeet leta! 😆",
-    "Bhai tu error message bhi nahi samajh sakta! 😂",
-    "Akele akele hansi nahi aati? Mujhse baat kar le! 😜",
-    "Tu chat GPT se tez hai kya? 😜"
-]
-
-# 🃏 Jokes API se Random Joke
-def get_joke():
+# 🔥 AI-Based Response Function
+def get_ai_reply(text):
     try:
-        response = requests.get("https://official-joke-api.appspot.com/random_joke")
-        joke = response.json()
-        return f"😂 {joke['setup']} ... {joke['punchline']}"
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",  # Ya "gpt-4" agar better response chahiye
+            messages=[{"role": "user", "content": text}]
+        )
+        return response['choices'][0]['message']['content']
     except:
-        return "Arre yaar, joke wali API so rahi hai! 😴"
+        return random.choice(funny_replies)  # Agar error aaye to backup reply de
 
-# 🌟 Motivational Quotes API
-def get_quote():
-    try:
-        response = requests.get("https://api.quotable.io/random")
-        quote = response.json()
-        return f"🌟 {quote['content']} - {quote['author']}"
-    except:
-        return "Quote ka stock khatam ho gaya, kal aana! 😜"
-
-# 📝 Shayari Collection
-shayari_list = [
-    "Aankhon se door na ho dil se utar jaayega, waqt ka kya hai guzar jaayega! ✨",
-    "Zindagi ek safar hai suhana, yahan kal kya ho kisne jaana! 🎶",
-    "Tu jo muskura de to baatein bani rahe, zindagi teri ada pe fida hai! 💕"
-]
-
-# 🎯 Message Handler (Sabhi Messages Ko Handle Karega)
+# 🎯 Message Handler
 @bot.message_handler(func=lambda message: True)
 def handle_messages(message):
     text = message.text.lower()
 
-    if "hello" in text or "hi" in text:
-        bot.reply_to(message, random.choice(funny_replies))
-    
-    elif "/joke" in text:
-        bot.reply_to(message, get_joke())
-
+    # 📌 Special Commands
+    if "/joke" in text:
+        bot.reply_to(message, "😂 " + get_ai_reply("Tell me a joke in Hindi"))
     elif "/quote" in text:
-        bot.reply_to(message, get_quote())
-
+        bot.reply_to(message, "🌟 " + get_ai_reply("Give me a motivational quote in Hindi"))
     elif "/shayari" in text:
-        bot.reply_to(message, random.choice(shayari_list))
-
+        bot.reply_to(message, "🎭 " + get_ai_reply("Mujhe ek mazedar Urdu shayari suna do"))
     elif "/roast" in text:
-        bot.reply_to(message, random.choice(roasts))
+        bot.reply_to(message, "🔥 " + get_ai_reply("Roast me in a funny way"))
 
-    elif bot.get_me().username.lower() in text:
-        bot.reply_to(message, "Bhai mujhe tag kyun kiya? Koi kaam batao! 😜")
-
+    # 📌 AI Response for Normal Messages
     else:
-        bot.reply_to(message, random.choice(funny_replies))
+        bot.reply_to(message, get_ai_reply(text))
 
 # 🚀 Start the Bot
-print("🤖 Bot is running... Join the fun!")
+print("🤖 AI Bot is Running...")
 bot.polling(none_stop=True)
